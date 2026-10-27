@@ -50,7 +50,8 @@ function init(){
  dummy.position.set(x,h/2,z);dummy.scale.set(r*.72,h,r*.72);dummy.rotation.set(0,rot,0);dummy.updateMatrix();trunkInst.setMatrixAt(i,dummy.matrix);
  for(let j=0;j<3;j++){const layerY=h*(.42+j*.19),layerH=h*(.48-j*.055),layerR=r*(1.55-j*.34);dummy.position.set(x,layerY,z);dummy.scale.set(layerR,layerH,layerR);dummy.rotation.set(0,rot+j*.7,0);dummy.updateMatrix();crownInst[j].setMatrixAt(i,dummy.matrix);}
  for(let j=0;j<2;j++){const side=j===0?-1:1,by=h*rand(.38,.64),len=r*rand(1.15,1.8);dummy.position.set(x+side*len*.3,by,z+rand(-.12,.12));dummy.scale.set(.85,len,.85);dummy.rotation.set(0,0,side*(.85+Math.random()*.35));dummy.updateMatrix();branchInst.setMatrixAt(i*2+j,dummy.matrix);}
- trees.push({x,z,r:.38}); // collision radius follows the trunk, not the wide branches/crown}
+ // Collision radius follows the trunk, not the wide branches/crown.
+  trees.push({x,z,r:.38});}
  scene.add(trunkInst,...crownInst,branchInst);
  // Scattered roots and stones
  const rockGeo=new THREE.DodecahedronGeometry(.38,0),rockMat=new THREE.MeshStandardMaterial({color:0x354035,roughness:1});
