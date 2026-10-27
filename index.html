@@ -32,12 +32,25 @@ function init(){
  const moon=new THREE.DirectionalLight(0x9aafad,.5);moon.position.set(-15,25,-12);scene.add(moon);
  const ground=new THREE.Mesh(new THREE.PlaneGeometry(180,180),new THREE.MeshStandardMaterial({color:0x172219,roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.13;scene.add(ground);
  const path=new THREE.Mesh(new THREE.PlaneGeometry(5,115),new THREE.MeshStandardMaterial({color:0x20271d,roughness:1}));path.rotation.x=-Math.PI/2;path.position.set(0,-.115,-34);scene.add(path);
- // Instanced trees keep the mobile scene light.
- const trunkGeo=new THREE.CylinderGeometry(.22,.34,1,5),leafGeo=new THREE.ConeGeometry(1,1,5);
- const trunkMat=new THREE.MeshStandardMaterial({color:0x35291d,roughness:1}),leafMat=new THREE.MeshStandardMaterial({color:0x10271a,roughness:1});
- const trunkInst=new THREE.InstancedMesh(trunkGeo,trunkMat,175),leafInst=new THREE.InstancedMesh(leafGeo,leafMat,175);const dummy=new THREE.Object3D();
- for(let i=0;i<175;i++){let x,z;do{x=rand(-43,43);z=rand(-48,42)}while(Math.hypot(x,z)<5||(Math.abs(x)<3.2&&z<8&&z>-48));const h=rand(3,7.2),r=rand(.75,1.35);dummy.position.set(x,h/2,z);dummy.scale.set(r,h,r);dummy.rotation.y=rand(0,6.28);dummy.updateMatrix();trunkInst.setMatrixAt(i,dummy.matrix);dummy.position.set(x,h*.78,z);dummy.scale.set(r*1.5,h*.47,r*1.5);dummy.updateMatrix();leafInst.setMatrixAt(i,dummy.matrix);trees.push({x,z,r:.75});}
- scene.add(trunkInst,leafInst);
+ // Procedural forest trees: textured bark, layered evergreen crowns and angled branches.
+ const barkCanvas=document.createElement('canvas');barkCanvas.width=128;barkCanvas.height=256;const bx=barkCanvas.getContext('2d');
+ bx.fillStyle='#493729';bx.fillRect(0,0,128,256);
+ for(let i=0;i<95;i++){const x=Math.random()*128,w=1+Math.random()*5;bx.fillStyle=['#211b16','#30241b','#624a32','#75573a','#3b2b20'][Math.floor(Math.random()*5)];bx.globalAlpha=.28+Math.random()*.55;bx.fillRect(x,0,w,256);}
+ for(let i=0;i<65;i++){bx.strokeStyle='#171b13';bx.globalAlpha=.25;bx.lineWidth=1+Math.random()*2;bx.beginPath();const x=Math.random()*128,y=Math.random()*256;bx.moveTo(x,y);bx.lineTo(x+(Math.random()-.5)*9,y+8+Math.random()*35);bx.stroke();}
+ bx.globalAlpha=1;const barkTex=new THREE.CanvasTexture(barkCanvas);barkTex.wrapS=THREE.RepeatWrapping;barkTex.wrapT=THREE.RepeatWrapping;barkTex.repeat.set(1,2);barkTex.colorSpace=THREE.SRGBColorSpace;
+ const needleCanvas=document.createElement('canvas');needleCanvas.width=128;needleCanvas.height=128;const nx=needleCanvas.getContext('2d');nx.fillStyle='#10251a';nx.fillRect(0,0,128,128);
+ for(let i=0;i<1800;i++){nx.fillStyle=['#0a1a12','#183723','#23472a','#2e4c2b','#52603a'][Math.floor(Math.random()*5)];nx.globalAlpha=.18+Math.random()*.45;const x=Math.random()*128,y=Math.random()*128;nx.fillRect(x,y,1+Math.random()*3,1+Math.random()*2);}
+ nx.globalAlpha=1;const needleTex=new THREE.CanvasTexture(needleCanvas);needleTex.colorSpace=THREE.SRGBColorSpace;
+ const trunkGeo=new THREE.CylinderGeometry(.22,.36,1,7,3),trunkMat=new THREE.MeshStandardMaterial({map:barkTex,color:0x9a8064,roughness:1});
+ const crownGeo=new THREE.ConeGeometry(1,1,7,2),crownMat=new THREE.MeshStandardMaterial({map:needleTex,color:0x789078,roughness:1,flatShading:true});
+ const trunkInst=new THREE.InstancedMesh(trunkGeo,trunkMat,175),crownInst=[new THREE.InstancedMesh(crownGeo,crownMat,175),new THREE.InstancedMesh(crownGeo,crownMat,175),new THREE.InstancedMesh(crownGeo,crownMat,175)];
+ const branchGeo=new THREE.CylinderGeometry(.035,.105,1,5),branchMat=new THREE.MeshStandardMaterial({map:barkTex,color:0x80674e,roughness:1});const branchInst=new THREE.InstancedMesh(branchGeo,branchMat,350);const dummy=new THREE.Object3D();
+ for(let i=0;i<175;i++){let x,z;do{x=rand(-43,43);z=rand(-48,42)}while(Math.hypot(x,z)<5||(Math.abs(x)<3.2&&z<8&&z>-48));const h=rand(4.2,8.6),r=rand(.72,1.35),rot=rand(0,6.28);
+ dummy.position.set(x,h/2,z);dummy.scale.set(r*.72,h,r*.72);dummy.rotation.set(0,rot,0);dummy.updateMatrix();trunkInst.setMatrixAt(i,dummy.matrix);
+ for(let j=0;j<3;j++){const layerY=h*(.42+j*.19),layerH=h*(.48-j*.055),layerR=r*(1.55-j*.34);dummy.position.set(x,layerY,z);dummy.scale.set(layerR,layerH,layerR);dummy.rotation.set(0,rot+j*.7,0);dummy.updateMatrix();crownInst[j].setMatrixAt(i,dummy.matrix);}
+ for(let j=0;j<2;j++){const side=j===0?-1:1,by=h*rand(.38,.64),len=r*rand(1.15,1.8);dummy.position.set(x+side*len*.3,by,z+rand(-.12,.12));dummy.scale.set(.85,len,.85);dummy.rotation.set(0,0,side*(.85+Math.random()*.35));dummy.updateMatrix();branchInst.setMatrixAt(i*2+j,dummy.matrix);}
+ trees.push({x,z,r:.82});}
+ scene.add(trunkInst,...crownInst,branchInst);
  // Scattered roots and stones
  const rockGeo=new THREE.DodecahedronGeometry(.38,0),rockMat=new THREE.MeshStandardMaterial({color:0x354035,roughness:1});
  const rocks=new THREE.InstancedMesh(rockGeo,rockMat,45);
