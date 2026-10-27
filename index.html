@@ -14,6 +14,24 @@
 <div id="rotate"><div><div class="rotateicon">📱 ↻</div><div class="eyebrow">LANDSCAPE REQUIRED</div><h2>TURN YOUR PHONE SIDEWAYS</h2><p class="copy">Rotate your device to play Dark Forest.</p></div></div>
 <div id="hud"><div class="top"><div><div class="brand">DARK FOREST</div><div class="muted" id="objective">RELICS 0 / 3</div></div><div class="health" id="health">♥ ♥ ♥</div></div><div class="hint" id="hint">LISTEN TO THE FOREST</div><div class="crosshair">+</div><div id="joy"><div id="knob"></div></div><div id="look"></div><div class="actions"><button class="action run" id="run"><span>»</span>RUN</button><button class="action" id="light"><span>🔦</span>LIGHT</button></div><div class="bottomnote">FIND THE RELICS. DON'T LET IT GET CLOSE.</div></div>
 <div id="scare"><div class="face">👹</div><div class="words">IT FOUND YOU</div></div>\n<div id="ending"><div class="panel"><div style="font-size:42px" id="endIcon">☠</div><div class="eyebrow">DARK FOREST</div><h2 class="title" id="endTitle">IT FOUND YOU</h2><p class="copy" id="endCopy"></p><button class="primary" id="again">TRY AGAIN</button></div></div>
+<script>
+window.__darkForestModuleReady = false;
+window.addEventListener('error', function(e) {
+  var box = document.getElementById('loadError');
+  if (box) { box.style.display = 'block'; box.textContent = 'Game script error: ' + (e.message || '3D engine failed to load') + '. Try opening this page in Safari or Chrome with internet enabled.'; }
+}, true);
+document.addEventListener('DOMContentLoaded', function() {
+  var start = document.getElementById('start');
+  if (start) start.addEventListener('click', function() {
+    setTimeout(function() {
+      if (!window.__darkForestModuleReady) {
+        var box = document.getElementById('loadError');
+        if (box) { box.style.display = 'block'; box.textContent = 'The 3D game engine did not start. Check internet access, then open this link directly in Safari/Chrome (not inside a social app).'; }
+      }
+    }, 900);
+  });
+});
+</script>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js"}}</script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
@@ -87,7 +105,7 @@ $('light').addEventListener('pointerdown',e=>{e.preventDefault();lightOn=!lightO
 $('run').addEventListener('pointerdown',e=>{e.preventDefault();running=true;$('run').classList.add('active');});for(const ev of ['pointerup','pointercancel','pointerleave'])$('run').addEventListener(ev,()=>{running=false;$('run').classList.remove('active');});
 addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='ShiftLeft'||e.code==='ShiftRight')running=true;});addEventListener('keyup',e=>{keys[e.code]=false;if(e.code==='ShiftLeft'||e.code==='ShiftRight')running=false;});
 $('start').addEventListener('click',begin);$('start').addEventListener('pointerup',e=>{e.preventDefault();begin();});$('again').addEventListener('click',reset);$('again').addEventListener('pointerup',e=>{e.preventDefault();reset();});
-try{init();$('loadError').textContent='3D engine ready. Rotate your phone to landscape.';}catch(e){$('loadError').style.display='block';$('loadError').textContent='Could not start 3D engine. Check your internet connection and reopen the page.';console.error(e);}
+try{init();window.__darkForestModuleReady=true;$('loadError').textContent='3D engine ready.';}catch(e){$('loadError').style.display='block';$('loadError').textContent='Could not start 3D engine. Check your internet connection and reopen the page.';console.error(e);}
 </script>
 </body>
 </html>
