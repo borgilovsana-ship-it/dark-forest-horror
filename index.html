@@ -10,12 +10,13 @@
 </style>
 </head>
 <body>
-<div id="intro"><div class="panel"><div style="font-size:42px">🌲</div><div class="eyebrow">A MOBILE FIRST-PERSON HORROR</div><h1 class="title">DARK FOREST</h1><p class="copy">Three lost relics are scattered through the woods. Find all three and escape. Something is already following you.</p><button class="primary" id="start">ENTER THE FOREST</button><div class="small">LEFT STICK: MOVE · DRAG RIGHT SIDE: LOOK<br>HOLD RUN TO MOVE FASTER · FLASHLIGHT CAN BE TOGGLED</div><div id="loadError"></div></div></div>
+<div id="intro"><div class="panel"><div style="font-size:42px">🌲</div><div class="eyebrow">A MOBILE FIRST-PERSON HORROR</div><h1 class="title">DARK FOREST</h1><p class="copy">Three lost relics are scattered through the woods. Find all three and escape. Something is already following you.</p><button class="primary" id="start">ENTER THE FOREST</button><div class="small">LEFT STICK: MOVE · DRAG RIGHT SIDE: LOOK<br>HOLD RUN TO MOVE FASTER · FLASHLIGHT CAN BE TOGGLED<br>MONSTER MODEL: MUSTAPHA / SKETCHFAB · CC BY 4.0</div><div id="loadError"></div></div></div>
 <div id="rotate"><div><div class="rotateicon">📱 ↻</div><div class="eyebrow">LANDSCAPE REQUIRED</div><h2>TURN YOUR PHONE SIDEWAYS</h2><p class="copy">Rotate your device to play Dark Forest.</p></div></div>
 <div id="hud"><div class="top"><div><div class="brand">DARK FOREST</div><div class="muted" id="objective">RELICS 0 / 3</div></div><div class="health" id="health">♥ ♥ ♥</div></div><div class="hint" id="hint">LISTEN TO THE FOREST</div><div class="crosshair">+</div><div id="joy"><div id="knob"></div></div><div id="look"></div><div class="actions"><button class="action run" id="run"><span>»</span>RUN</button><button class="action" id="light"><span>🔦</span>LIGHT</button></div><div class="bottomnote">FIND THE RELICS. DON'T LET IT GET CLOSE.</div></div>
 <div id="scare"><div class="face">👹</div><div class="words">IT FOUND YOU</div></div>\n<div id="ending"><div class="panel"><div style="font-size:42px" id="endIcon">☠</div><div class="eyebrow">DARK FOREST</div><h2 class="title" id="endTitle">IT FOUND YOU</h2><p class="copy" id="endCopy"></p><button class="primary" id="again">TRY AGAIN</button></div></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/GLTFLoader.js';
 const $=id=>document.getElementById(id);
 let scene,camera,renderer,clock,flashlight,fillLight,monster;
 let started=false,ended=false,lightOn=true,running=false,health=3,found=0;
@@ -48,6 +49,8 @@ function init(){
  const eyeMat=new THREE.MeshBasicMaterial({color:0xff2115});for(const x of [-.145,.145]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,6,5),eyeMat);eye.position.set(x,2.7,-.325);monster.add(eye);}
  for(const x of [-.53,.53]){const arm=new THREE.Mesh(new THREE.CylinderGeometry(.09,.13,1.35,5),dark);arm.position.set(x,1.55,0);arm.rotation.z=-x*.24;monster.add(arm);const leg=new THREE.Mesh(new THREE.CylinderGeometry(.13,.1,1.05,5),dark);leg.position.set(x*.43,.48,0);monster.add(leg);}
  monster.position.set(13,0,-23);scene.add(monster);
+ // Load the uploaded Sketchfab GLB. Keep the procedural creature as a fallback if loading fails.
+ new GLTFLoader().load('./horror_monster.glb',gltf=>{const model=gltf.scene;model.scale.setScalar(1.25);model.position.set(0,-.95,0);model.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;if(o.material){o.material.side=THREE.DoubleSide;}}});while(monster.children.length)monster.remove(monster.children[0]);monster.add(model);monster.userData.customModel=true;},undefined,error=>{console.warn('Could not load horror_monster.glb; using built-in creature.',error);});
  flashlight=new THREE.SpotLight(0xe4f7df,78,30,Math.PI/7,.48,1.25);flashlight.position.set(0,0,0);flashlight.target.position.set(0,0,-1);camera.add(flashlight,flashlight.target);scene.add(camera);fillLight=new THREE.AmbientLight(0x243829,.28);scene.add(fillLight);
  addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,180));
  renderer.setAnimationLoop(animate);
